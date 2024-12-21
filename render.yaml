@@ -1,6 +1,6 @@
 services:
   - type: web
-    name: my-service
+    name: python-with-java
     env: python
     buildCommand: |
       apt-get update
