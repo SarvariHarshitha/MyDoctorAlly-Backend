@@ -3,6 +3,7 @@ nltk.download('punkt')
 nltk.download('averaged_perceptron_tagger')
 nltk.download('maxent_ne_chunker')
 nltk.download('words')
+nltk.download('punkt_tab')
 from nltk.tokenize import sent_tokenize
 import spacy
 import re
@@ -62,14 +63,3 @@ def clean_text_using_nlp(input_text):
 
     return simplified_text
 
-# Sample input text for testing
-input_text = """
-Uh, I think this is an example text with um, some filler words and maybe some incorrect spellings. like, We want to test the text cleaning methods!
-"""
-
-# Process the input text
-processed_text = clean_text_using_nlp(input_text)
-
-# Print the processed text
-print("Processed Text:")
-print(processed_text)
