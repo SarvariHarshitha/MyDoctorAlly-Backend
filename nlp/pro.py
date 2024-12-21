@@ -1,32 +1,21 @@
-import nltk
-nltk.download('punkt')
-nltk.download('punkt_tab')
-nltk.download('averaged_perceptron_tagger')
-nltk.download('maxent_ne_chunker')
-nltk.download('words')
-from nltk.tokenize import sent_tokenize
-import spacy
 import re
+import spacy
 from textblob import TextBlob
-import language_tool_python
+from gingerit.gingerit import GingerIt
+from nltk.tokenize import sent_tokenize
 
 
+# Initialize Spacy NLP model (you can choose another model if you prefer)
+nlp = spacy.load("en_core_web_sm")
 
-tool = language_tool_python.LanguageTool('en-US')
-
-nlp = spacy.load("en_core_web_sm")#lightweight English model optimized for small memory usage and fast performance
-#tokenization, part-of-speech tagging, dependency parsing, named entity recognition, and lemmatization.
-
+# Function to clean the text (removes extra spaces, punctuation)
 def clean_text(text):
     text = re.sub(r'\s+', ' ', text)  # Remove extra spaces
     text = re.sub(r'[^\w\s]', '', text)  # Remove punctuation
     return text.strip()
 
-
+# Function to remove filler words (uh, um, like)
 def remove_fillers(text):
-    """
-    Remove filler words and excessive ellipsis
-    """
     filler_words = ['uh', 'um', 'like']
     pattern = r'\b(' + '|'.join(filler_words) + r')\b\.{0,3}\s*'
     text = re.sub(pattern, '', text, flags=re.IGNORECASE)
@@ -34,12 +23,8 @@ def remove_fillers(text):
     text = re.sub(r'\.{2,}', '.', text)
     return text
 
-
+# Function to simplify the text (processes each sentence with spaCy)
 def simplify_text(text):
-    """
-    Simplify the input text for better readability.
-    """
-    # Break text into sentences
     sentences = sent_tokenize(text)
     simplified_sentences = []
 
@@ -48,45 +33,46 @@ def simplify_text(text):
         simplified_sentence = []
 
         for token in doc:
-            
             # Keep punctuation and numbers unchanged
             simplified_sentence.append(token.text)
 
-        # Reconstruct the sentence
         simplified_sentences.append(" ".join(simplified_sentence))
 
-    # Reconstruct the text
     return " ".join(simplified_sentences)
 
-def clean_text_using_nlp(input_text):
-
-    
-    #remove filters 
-    text= remove_fillers(input_text)
-
-    #spell checker
+# Grammar and spelling correction using TextBlob and Gingerit
+def grammar_and_spelling_correction(text):
+    # Correct spelling with TextBlob
     spelled_text = TextBlob(text).correct()
 
-    #grammer correction
-    matches = tool.check(spelled_text)
-    grammer_corrected_text = language_tool_python.utils.correct(spelled_text, matches)
+    # Correct grammar and spelling with Gingerit
+    parser = GingerIt()
+    result = parser.parse(str(spelled_text))
 
+    return result['result']
 
-    # Process the text
-    cleaned_text = clean_text(grammer_corrected_text)
+# The main function to process and clean text using NLP
+def clean_text_using_nlp(input_text):
+    # Step 1: Remove filler words
+    text = remove_fillers(input_text)
 
+    # Step 2: Perform grammar and spelling correction
+    corrected_text = grammar_and_spelling_correction(text)
 
+    # Step 3: Clean up the text (remove extra spaces, punctuation)
+    cleaned_text = clean_text(corrected_text)
+
+    # Step 4: Simplify the text for better readability
     simplified_text = simplify_text(cleaned_text)
-
 
     return simplified_text
 
+# Sample text for testing
+input_text = """
+Uh, I think this is an example text with um, some filler words and maybe some incorrect spellings. like, We want to test the text cleaning methods!
+"""
 
-
-
-
-
-
-
-
-
+# Call the main function to clean and process the text
+processed_text = clean_text_using_nlp(input_text)
+print("Processed Text:")
+print(processed_text)
